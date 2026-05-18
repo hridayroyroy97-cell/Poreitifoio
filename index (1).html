@@ -1,0 +1,91 @@
+using UnityEngine;
+
+public class GameController : MonoBehaviour
+{
+    // PLAYER
+    public float speed = 5f;
+
+    // SHOOTING
+    public GameObject bullet;
+    public Transform firePoint;
+
+    // ZOMBIE
+    public GameObject zombiePrefab;
+    public Transform zombieSpawnPoint;
+    public float zombieSpeed = 2f;
+    private GameObject currentZombie;
+
+    // MUSIC
+    public AudioSource audioSource;
+    public AudioClip[] songs;
+
+    void Start()
+    {
+        SpawnZombie();
+    }
+
+    void Update()
+    {
+        PlayerMove();
+        Shoot();
+        ZombieMove();
+    }
+
+    void PlayerMove()
+    {
+        float h = Input.GetAxis("Horizontal");
+        float v = Input.GetAxis("Vertical");
+        transform.Translate(new Vector3(h, 0, v) * speed * Time.deltaTime);
+    }
+
+    void Shoot()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            Instantiate(bullet, firePoint.position, firePoint.rotation);
+        }
+    }
+
+    void SpawnZombie()
+    {
+        currentZombie = Instantiate(zombiePrefab, zombieSpawnPoint.position, Quaternion.identity);
+    }
+
+    void ZombieMove()
+    {
+        if (currentZombie != null)
+        {
+            currentZombie.transform.position = Vector3.MoveTowards(
+                currentZombie.transform.position,
+                transform.position,
+                zombieSpeed * Time.deltaTime
+            );
+        }
+    }
+
+    public void PlaySong(int index)
+    {
+        audioSource.clip = songs[index];
+        audioSource.Play();
+    }
+}using UnityEngine;
+
+public class Bullet : MonoBehaviour
+{
+    public float speed = 10f;
+
+    void Update()
+    {
+        transform.Translate(Vector3.forward * speed * Time.deltaTime);
+        Destroy(gameObject, 3f);
+    }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.tag == "Zombie")
+        {
+            Destroy(collision.gameObject);
+            Destroy(gameObject);
+        }
+    }
+}
